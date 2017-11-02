@@ -24,7 +24,7 @@ import aolme
 import cv2
 # Initializing color thresholds and creating a single array
 # having all the thresholds. ???How to explain what are doing here???!
-RMin = 85    # Minimum value of red.
+RMin = 20    # Minimum value of red.
 RMax = 255  # Maximum value of red.
 GMin = 0    # Minimum value of Green.
 GMax = 50  # Maximum value of Green.
