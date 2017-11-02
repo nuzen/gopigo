@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv2
 from matplotlib import pyplot as plt
 import gopigo3
-import pygame
+#import pygame
 import time
 import easygopigo3 as easy
 
@@ -43,7 +43,7 @@ def rt(degrees):
     dexgp.turn_degrees(degrees)
     time.sleep(0.01)
 
-def turn_back():
+def tb():
     dexgp.turn_degrees(200)
     time.sleep(1)
 
@@ -106,6 +106,19 @@ class threshold:
             plt.xlim([0,256])
             plt.title(col)
             plt.show()
+
+    def show_color_comb_hist(self):
+        color = ('Blue','Green','Red')
+        for i,col in enumerate(color):
+            histr = cv2.calcHist([self.color_img],[i],None,[256],[0,256])
+            plt.figure('RGB Histogram')
+            plt.plot(histr,color = col)
+            pyplot.xlabel('Pixel values')
+            pyplot.ylabel('Number of occurrences')
+            pyplot.title(color[i])
+            plt.xlim([0,256])
+            plt.title(col)
+            plt.show()
     
     def show_threshold(self,plot_name):
         histr = cv2.calcHist([self.color_img],[self.index],None,[256],[0,256])
@@ -148,118 +161,136 @@ class threshold:
              
         
 class comb_thr:
-    def __init__(self, img, blueTh,greenTh,redTh,color_name,N, action):
+    def __init__(self, img, blueTh,greenTh,redTh,color_name, angle, action):
+        self.centres = []
+        self.areas = []
         self.action = action
-        self.N = N
+        self.angle = angle
         self.color_name = color_name
         self.img = img
         self.center = []
-        row=img.shape[0]
-        col=img.shape[1]
-        
-        allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
-       
+        #row=img.shape[0]
+        self.col=img.shape[1]
         self.comb_binary_img = (blueTh*greenTh*redTh).astype(np.uint8)
+#        self.allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
+        _, self.contours, _ = cv2.findContours(self.comb_binary_img.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_L1)
+#        self.count_num = np.sum(self.allTh)
+#        b=((self.img[:,:,0]/1.0)*self.allTh).astype(np.uint8)
+#        g=((self.img[:,:,1]/1.0)*self.allTh).astype(np.uint8)
+#        r=((self.img[:,:,2]/1.0)*self.allTh).astype(np.uint8)
+#                
+#        self.comb_img = cv2.merge((b,g,r))
+        self.markColorRegions()
+                 
+            
+        if (self.action == 'test'):
+            self.det_only()
         
-        
-        _, contours, _ = cv2.findContours(self.comb_binary_img.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_L1)
-        
-        #cv2.imshow('comb_binary_img', self.comb_binary_img)
-        
-        centres = []
-        areas = []
-      
-        self.count_num = np.sum(allTh)
-        
-        b=((img[:,:,0]/1.0)*allTh).astype(np.uint8)
-        g=((img[:,:,1]/1.0)*allTh).astype(np.uint8)
-        r=((img[:,:,2]/1.0)*allTh).astype(np.uint8)
-                
-        self.comb_img = cv2.merge((b,g,r))
-        
+        elif (self.action == 'det'):
+            self.det_move()
+            
+        else:
+            print ('Warning: Wrong action.')
+            
+        return
+    
 
-        # Find all color parts and mark them with red points       
-        for i in range(len(contours)):
-            cnt = contours[i]
+        
+    ''' Only detect color regions '''
+    def det_only(self):
+        if (self.areas == []):
+            return
+        else:
+            self.markLargest()
+        
+    ''' Detect color regions and move to the object '''
+    def det_move(self):
+        if (self.areas == []):
+            #print('angle=', self.angle)
+            self.searchTarget()
+
+        # Mark the largest connected color part with a blue point
+        else:
+            self.searchLargest()
+    
+    ''' Find the largest color region and mark it with blue dot '''
+    def markLargest(self):
+        #all_areas = np.array(areas)
+        max_area = max(self.areas)
+        max_index = self.areas.index(max_area)
+        cv2.circle(self.img, self.centres[max_index],2,(255,0,0),2)
+        self.center = self.centres[max_index]
+        
+    ''' If robot cannot find any target, it will turn around by 360 degrees and then move
+     forward for one second, until it finds color regions '''
+    def searchTarget(self):
+         if (self.angle == 360):
+             self.checkDistance()
+             #fw(1)
+             time.sleep(0.1)
+             print('Move forward for 1 sec')
+             self.angle = 0
+         else:
+            rt(30)
+            print('Turn right by 30 degrees')
+            time.sleep(0.1)
+            self.angle = self.angle+30
+            
+         return 
+        
+    ''' Make sure the largest color region (blue dot) is in the center range
+    of the frame, if the dot in the left/right part of the image, the robot will
+    turn left/right by 5 degrees, otherwise move forward '''
+    def searchLargest(self):
+        max_area = max(self.areas)
+        max_index = self.areas.index(max_area)
+        cv2.circle(self.img, self.centres[max_index],2,(255,0,0),2)
+        # If the blue point at the left of the center, the robot
+        # will turn left by 5 degrees.
+        if (self.centres[max_index][0] < self.col/2-35 ):
+            lt(5)
+            print('Turn left')
+
+                
+            # If the blue point at the right of the center, the robot
+            # will turn right by 5 degrees.
+        elif (self.centres[max_index][0] > self.col/2+35 ):
+            rt(5)
+            print('Turn right')
+                    
+            # Otherwise move forward for one second
+        else:
+                    
+            print('Move forward')
+            self.findObj()
+        
+    ''' Mark all detected color regions with red dots '''
+    def markColorRegions(self):
+        # Find all color regions and mark them with red points       
+        for i in range(len(self.contours)):
+            cnt = self.contours[i]
             
             moments = cv2.moments(cnt)
             
             if (moments['m00'] != 0):
-                centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
-                cv2.circle(self.img, centres[-1],2,(0,0,255),-1)
+                self.centres.append((int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00'])))
+                cv2.circle(self.img, self.centres[-1],2,(0,0,255),-1)
                 area = cv2.contourArea(cnt)
                 
-                areas.append(area)
+                self.areas.append(area)
                 
-        if (self.action == 'det'):
-
-            # If robot cannot find any target, it will turn around and then move
-            # forward for one second, until it gets color.
-            
-            if (areas == []):
-                #print('N=', self.N)
-                if (self.N%(22) ==0):
-                    self.check_distance()
-                    #fw(1)
-                    time.sleep(0.1)
-                    print('Move forward for 1 sec')
-                    self.N = self.N+1
-                else:
-                    rt(30)
-                    print('Turn right by 30 degrees')
-                    time.sleep(0.1)
-                    self.N = self.N+1
-            
-                return 
-
-            # Mark the largest connected color part with a blue point
-            else:
-                max_area = max(areas)
-                max_index = areas.index(max_area)
-                cv2.circle(self.img, centres[max_index],2,(255,0,0),2)
-                # If the blue point at the left of the center, the robot
-                # will turn left by 5 degrees.
-                if (centres[max_index][0] < col/2-35 ):
-                    lt(5)
-                    print('Turn left')
-
-                
-                # If the blue point at the right of the center, the robot
-                # will turn right by 5 degrees.
-                elif (centres[max_index][0] > col/2+35 ):
-                    rt(5)
-                    print('Turn right')
-                    
-                # Otherwise move forward for one second
-                else:
-                    
-                    print('Move forward')
-                    self.find_obj()
-
-        elif (self.action == 'test'):
-            if (areas == []):
-                return
-            else:
-                #all_areas = np.array(areas)
-                max_area = max(areas)
-                max_index = areas.index(max_area)
-                cv2.circle(self.img, centres[max_index],2,(255,0,0),2)
-                self.center = centres[max_index]
-        else:
-            print ('Warning: Wrong action.')
-            
-       
         return
-
+    
+   
+    
+    ''' Display images from camera '''
     def im_show(self):
         
         cv2.imshow(self.color_name, self.img)
-        
-        
-        return (self.center, self.N, self.img)
+        return (self.center, self.angle, self.img)
 
     def returnResults(self):
-        return (self.center, self.N, self.img)
+        return (self.center, self.angle, self.img)
             
     # The @property  allows you to type
     #    object_name.original_img 
@@ -268,29 +299,32 @@ class comb_thr:
     @property
     def count(self):
         return self.count_pixels
-
-    def find_obj(self):
+    
+    ''' After finding the object, move forward if the distance is larger than 
+    250 mm. Otherwise the robot will dance to celebrate '''
+    def findObj(self):
         if (my_distance_sensor.read_mm() > 250):
             fw(1)
             time.sleep(0.1)
-        if (my_distance_sensor.read_mm() < 250):
+        else:
             #print(my_distance_sensor.read_mm())
+            self.dance()
+            
+    ''' Robot dances  '''
+    def dance(self):
+        for i in range (1, 4):
             bw(0.1)
             fw(0.1)
-            bw(0.1)
-            fw(0.1)
-            bw(0.1)
-            fw(0.1)
-            bw(0.1)
-            fw(0.1)
-            bw(1)
-            turn_back()
-            fw(2)
-            dexgp.reset_all()
-
-    def check_distance(self):
+        
+        bw(1)
+        tb()
+        fw(2)
+        dexgp.reset_all()
+     
+    ''' Check the distance between the robot and the object'''    
+    def checkDistance(self):
         if (my_distance_sensor.read_mm() < 250):
-            turn_back()
+            tb()
             fw(1)
         else:
             fw(1)
