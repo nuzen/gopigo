@@ -1155,13 +1155,13 @@ class GoPiGo3(object):
         # Turn off the LEDs
         self.set_led(self.LED_EYE_LEFT + self.LED_EYE_RIGHT + self.LED_BLINKER_LEFT + self.LED_BLINKER_RIGHT, 0, 0, 0)
 
+
     def turn_degrees(self, degrees, blocking=False):
         # this is the method to use if you want the robot to turn 90 degrees
         # or any other amount. This method is based on robot orientation
         # and not wheel rotation
         # the distance in mm that each wheel needs to travel
         WheelTravelDistance = ((self.WHEEL_BASE_CIRCUMFERENCE * degrees) / 360)
-
         # the number of degrees each wheel needs to turn
         WheelTurnDegrees = ((WheelTravelDistance / self.WHEEL_CIRCUMFERENCE) *
                             360)
@@ -1176,10 +1176,101 @@ class GoPiGo3(object):
         self.set_motor_position(self.MOTOR_RIGHT,
                                 (StartPositionRight - WheelTurnDegrees))
         
-        if blocking:
+        #if blocking:
+        if 1:
             while self.target_reached(
                     StartPositionLeft + WheelTurnDegrees,
                     StartPositionRight - WheelTurnDegrees) is False:
                 time.sleep(0.1)
 
+    def target_reached(self, left_target_degrees, right_target_degrees):
+        """
+        | Checks if :
 
+             * The left *wheel* has rotated for ``left_target_degrees`` degrees.
+             * The right *wheel* has rotated for ``right_target_degrees`` degrees.
+
+        | If both conditions are met, it returns ``True``, otherwise it's ``False``.
+
+        :param int left_target_degrees: Target degrees for the *left* wheel.
+        :param int right_target_degrees: Target degrees for the *right* wheel.
+
+        :return: Whether both wheels have reached their target.
+        :rtype: boolean.
+
+        For checking if the `GoPiGo3`_ robot has moved **forward** for ``360 / 360`` wheel rotations, we'd use the following code snippet.
+
+        .. code-block:: python
+
+            # both variables are measured in degrees
+            left_motor_target = 360
+            right_motor_target = 360
+
+            # reset the encoders
+            gpg3_obj.reset_encoders()
+            # and make the robot move forward
+            gpg3_obj.forward()
+
+            while gpg3_obj.target_reached(left_motor_target, right_motor_target):
+                # give the robot some time to move
+                sleep(0.05)
+
+            # now lets stop the robot
+            # otherwise it would keep on going
+            gpg3_obj.stop()
+
+        On the other hand, for moving the `GoPiGo3`_ robot to the **right** for ``187 / 360`` wheel rotations of the left wheel, we'd use the following code snippet.
+
+        .. code-block:: python
+
+            # both variables are measured in degrees
+            left_motor_target = 187
+            right_motor_target = 0
+
+            # reset the encoders
+            gpg3_obj.reset_encoders()
+            # and make the robot move to the right
+            gpg3_obj.right()
+
+            while gpg3_obj.target_reached(left_motor_target, right_motor_target):
+                # give the robot some time to move
+                sleep(0.05)
+
+            # now lets stop the robot
+            # otherwise it would keep on going
+            gpg3_obj.stop()
+
+        .. note::
+
+            You *can* use this method in conjuction with the following methods:
+
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_cm`
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_inches`
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_degrees`
+
+            when they are used in *non-blocking* mode.
+
+            And almost *everytime* with the following ones:
+
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.backward`
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.right`
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.left`
+                 * :py:meth:`~easygopigo3.EasyGoPiGo3.forward`
+
+        """
+        tolerance = 5
+        min_left_target = left_target_degrees - tolerance
+        max_left_target = left_target_degrees + tolerance
+        min_right_target = right_target_degrees - tolerance
+        max_right_target = right_target_degrees + tolerance
+
+        current_left_position = self.get_motor_encoder(self.MOTOR_LEFT)
+        current_right_position = self.get_motor_encoder(self.MOTOR_RIGHT)
+
+        if current_left_position > min_left_target and \
+           current_left_position < max_left_target and \
+           current_right_position > min_right_target and \
+           current_right_position < max_right_target:
+            return True
+        else:
+            return False

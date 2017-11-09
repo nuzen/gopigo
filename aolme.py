@@ -37,26 +37,28 @@ def fw(t):
     for i in range(0, int(t*100+1) ):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 100)
         time.sleep(0.01)
-    dexgp.reset_all()
+    #dexgp.reset_all()
     
 def bw(t):
     for i in range(0, int(t*100+1) ):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, -100)
         time.sleep(0.01)
-    dexgp.reset_all()
+    #dexgp.reset_all()
 
 def leftsec(t): ## chabge for degreees
     for i in range(0, int(t*100+1)):
         dexgp.set_motor_power(dexgp.MOTOR_RIGHT, 50)
         dexgp.set_motor_power(dexgp.MOTOR_LEFT, 0)
         time.sleep(0.01)
-    dexgp.reset_all()
+    #dexgp.reset_all()
 
 def lt(degrees):
     dexgp.turn_degrees(-degrees)
+    #dexgp.reset_all()
     
 def rt(degrees):
-     dexgp.turn_degrees(degrees)
+    dexgp.turn_degrees(degrees)
+    #dexgp.reset_all()
           
 def rightsec(t):
     """
@@ -66,7 +68,7 @@ def rightsec(t):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT, 50)
         dexgp.set_motor_power(dexgp.MOTOR_RIGHT, 0)
         time.sleep(0.01)
-    dexgp.reset_all()
+    #dexgp.reset_all()
 
 
 
