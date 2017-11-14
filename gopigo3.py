@@ -1177,7 +1177,7 @@ class GoPiGo3(object):
                                 (StartPositionRight - WheelTurnDegrees))
         
         #if blocking:
-        if 1:
+        if blocking:
             while self.target_reached(
                     StartPositionLeft + WheelTurnDegrees,
                     StartPositionRight - WheelTurnDegrees) is False:
