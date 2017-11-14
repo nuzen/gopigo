@@ -1,6 +1,6 @@
 import aolme
-aolme.rt(35)
+aolme.rightsec(1)
 aolme.fw(1)
 aolme.bw(1)
-aolme.lt(35)
+aolme.leftsec(1)
 aolme.resetSensors()
