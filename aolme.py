@@ -56,16 +56,14 @@ def leftsec(t): ## chabge for degreees
 
 def lt(degrees):
     dexgp.turn_degrees(-degrees)
-    time.sleep(0.01)
-    dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
-    dexgp.reset_all()
+    #dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
+    #dexgp.reset_all()
     
     
 def rt(degrees):
     dexgp.turn_degrees(degrees)
-    time.sleep(0.01)
-    dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
-    dexgp.reset_all()
+    #dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
+    #dexgp.reset_all()
           
 def rightsec(t):
     """
@@ -77,8 +75,11 @@ def rightsec(t):
         time.sleep(0.01)
     #dexgp.reset_all()
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
-    
 
+def dance():
+    """
+    Demo dance using fw, bw, rt and lt
+    """
 
 
 #
@@ -142,7 +143,12 @@ def getObjCenter(img, MMA):
 #    cv2.imshow('Temp',img)
 #    cv2.waitKey(0)
 #    cv2.destroyAllWindows()
-    return objCenter
+    return objCenter, img
+
+def showImg(img):
+    cv2.imshow('Object image',img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def TakeSnap(name=''):
     if len(name) == 0:

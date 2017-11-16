@@ -40,10 +40,15 @@ while True:
     imgCent = aolme.getImgCenter(img) # get image center.
     objCent,img = aolme.getObjCenter(img, # get object center and image having object center marked by blue dot.
                                  MinMaxArray)
-    aolme.showImg(img)                # displays image and waits for the user to hit ESC.
+#    aolme.showImg(img)                # displays image and waits for the user to hit ESC.
 
     if len(objCent) == 0:             # if the object is not
         break;                        # found, stop
+
+    dist = aolme.getDist()            # Get distance from IR sensor
+    print(dist)
+    if dist <= 5:                     # If distance is less than 5mm
+        break;                        # stop
     
     x_diff = objCent[0] - imgCent[0]
     if( abs(x_diff) <= 80 ):          # if the object close to
@@ -55,4 +60,4 @@ while True:
                                       
     if (x_diff < -80):                # if the difference is negative
         aolme.lt(10)                  # the robot is to the left.
-                                      # Turn left 10 degrees.
+aolme.resetSensors()

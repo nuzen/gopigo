@@ -56,3 +56,15 @@ while True:
     if (x_diff < -80):                # if the difference is negative
         aolme.lt(10)                  # the robot is to the left.
                                       # Turn left 10 degrees.
+# The robot dances
+i = 1
+while i < 10:                         # robot moves forward
+    aolme.fw(0.5)                     # and backwards for 0.5 secons
+    aolme.bw(0.5)                     # 10 times
+    
+aolme.rt(360)                         # rotates right for 360 degrees
+aolme.lt(45)                          # rotates left for 45 degrees
+
+while i < 10:                        # robot rotates right and left
+    aolme.rt(20)                     # 20 degrees for 10 times
+    aolme.lt(20)

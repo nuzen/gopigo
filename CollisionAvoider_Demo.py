@@ -23,8 +23,8 @@ elapsedTime = aolme.elapsedTime() # initialize elapsedTime
 while (elapsedTime < 20):             # Check if 20 seconds elapsed
     if dist > 25:                     # If distance > 25 mm
         aolme.fw(1)                   #   Move forward for 1 second
-    else:                     # If distance < 25 mm
-        aolme.rt(45)                  #   Turn right 45 degrees
+    else:                             # If distance < 25 mm
+        aolme.lt(45)                  #   Turn right 45 degrees
     dist = aolme.getDist()            # Update distance after moving
     elapsedTime = aolme.elapsedTime() # new elapsedTime
 
