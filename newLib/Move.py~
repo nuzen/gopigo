@@ -1,0 +1,7 @@
+"""
+Class having basic movement commands
+""""
+class Move()::w
+
+
+

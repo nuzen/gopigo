@@ -1,0 +1,15 @@
+import gopigo3
+
+
+class Move:
+    """
+    
+    """
+    def fw(self):
+        """
+        Move forward.
+        """
+        print("Move forward")
+
+
+
