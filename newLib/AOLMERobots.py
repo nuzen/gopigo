@@ -7,6 +7,7 @@ from picamera import PiCamera
 # Python modules
 import time
 import cv2
+import math
 import pdb
 # Wenjing image threshold module
 from thresholds2 import threshold, comb_thr
@@ -86,12 +87,7 @@ def rt(t):
         time.sleep(0.01)
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
 
-
-    for i in range(0, int(t*100+1)):
-        dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 100)
-        time.sleep(0.01)
-    dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
-
+    
 
 def lt(t):
     """
@@ -111,8 +107,7 @@ def lt(t):
 
 def ltd(d):
     """
-    ??? - > Not working.
-    Turns right for d degrees.
+    Turns left for d degrees.
 
     Example:
     import AOLMERobots as gopi
@@ -120,12 +115,13 @@ def ltd(d):
     """
     
     dexgp = gopigo3.GoPiGo3()
-    dexgp.turn_degrees(-d)
+    
+    dexgp.turn_degrees(-d*3, True)
+    
 
     
 def rtd(d):
     """
-    ??? - > Not working.
     Turns right for d degrees.
 
     Example:
@@ -134,7 +130,7 @@ def rtd(d):
     """
     
     dexgp = gopigo3.GoPiGo3()
-    dexgp.turn_degrees(d)
+    dexgp.turn_degrees(d*3)
 
 
 """
@@ -187,7 +183,7 @@ def show_image(img):
     Show image.
     """
     cv2.imshow("Figure1",img)
-    cv2.waitKey(25)
+    cv2.waitKey(1)
 
 
 def get_image_center():
@@ -226,7 +222,8 @@ def get_object_center(rth, gth, bth):
     GreenRange            = thr_obj.ThreshRange (gth[0], gth[1])
     thr_obj.sel_color_comp('blue')
     BlueRange             = thr_obj.ThreshRange (bth[0], bth[1])
-    (obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Helloworld', 1, 'test').returnResults()
+    #(obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Vision', 90, 'test').returnResults()
+    (obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Vision', 90, 'det').im_show()
     x                     = obj_center[0]
     y                     = obj_center[1]
     return x,y,img

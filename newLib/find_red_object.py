@@ -1,14 +1,17 @@
 import AOLMERobots as gopi
 import random
 import pdb
-
+#import cv2
+#import gopigo3
+from thresholds2 import threshold, comb_thr 
+#dexgp = gopigo3.GoPiGo3()
 # Resetting sensors
 gopi.reset_sensors()
 
 # Color thresholds
-red_min_max = [0,255]
-grn_min_max = [0,255]
-blu_min_max = [0,255]
+red_min_max = [50,255]
+grn_min_max = [0,20]
+blu_min_max = [0,50]
 
 # Get image center
 x0,y0       = gopi.get_image_center()
@@ -25,21 +28,8 @@ while(dist > 10):
     x,y,img     = gopi.get_object_center(red_min_max,
                                          grn_min_max,
                                          blu_min_max)
-    # Show object
-    gopi.show_image(img)
-
-    # ??? Should work on logic on how to move robot.
-    # for now I am randomly moving robot fw and rt
-    a = random.uniform(0,1)
-    if a == 0:
-        gopi.fw(1)
-    else:
-        gopi.rt(0.5)
-
     # Updating object distance
     dist   = gopi.get_dist()
-
+    
 # Resetting sensors once the robot stops
 gopi.reset_sensors()
-    
-        

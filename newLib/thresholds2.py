@@ -287,6 +287,7 @@ class comb_thr:
     def im_show(self):
         
         cv2.imshow(self.color_name, self.img)
+        cv2.waitKey(25)
         return (self.center, self.angle, self.img)
 
     def returnResults(self):
