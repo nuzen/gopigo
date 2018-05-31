@@ -9,6 +9,7 @@ import time
 import cv2
 import math
 import pdb
+import random
 # Wenjing image threshold module
 from thresholds2 import threshold, comb_thr
 
@@ -117,6 +118,7 @@ def ltd(d):
     dexgp = gopigo3.GoPiGo3()
     
     dexgp.turn_degrees(-d*3, True)
+    dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
     
 
     
@@ -131,6 +133,7 @@ def rtd(d):
     
     dexgp = gopigo3.GoPiGo3()
     dexgp.turn_degrees(d*3)
+    dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
 
 
 """
@@ -183,7 +186,7 @@ def show_image(img):
     Show image.
     """
     cv2.imshow("Figure1",img)
-    cv2.waitKey(1)
+    cv2.waitKey(100)
 
 
 def get_image_center():
@@ -199,7 +202,7 @@ def get_image_center():
     image     = raw_img.array
     image_ht  = image.shape[0]
     image_wd  = image.shape[1]
-    return image_ht/2,image_wd/2
+    return image_wd/2,image_ht/2
 
 
 def get_object_center(rth, gth, bth):
@@ -222,10 +225,13 @@ def get_object_center(rth, gth, bth):
     GreenRange            = thr_obj.ThreshRange (gth[0], gth[1])
     thr_obj.sel_color_comp('blue')
     BlueRange             = thr_obj.ThreshRange (bth[0], bth[1])
-    #(obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Vision', 90, 'test').returnResults()
-    (obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Vision', 90, 'det').im_show()
-    x                     = obj_center[0]
-    y                     = obj_center[1]
+    (obj_center, ang, img) = comb_thr(img, BlueRange, GreenRange, RedRange, 'Vision', 90, 'test').returnResults()
+    if (len(obj_center) == 0):
+        x = random.randint(0,img.shape[1]/2)
+        y = random.randint(0,img.shape[0]/2)
+    else:
+        x = obj_center[0]
+        y = obj_center[1]
     return x,y,img
     
 
