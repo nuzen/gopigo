@@ -168,6 +168,7 @@ def get_image(image_name):
     """
 
     camera    = PiCamera()
+    camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
     time.sleep(0.1) # Let camera warm up
     camera.capture(raw_img, format="bgr")
@@ -188,7 +189,6 @@ def show_image(img):
     """
     Show image.
     """
-    img= cv2.resize(img, (int(img.shape[1]*0.75), int(img.shape[0]*0.75)))
     cv2.imshow("Figure1",img)
     cv2.moveWindow("Figure1", 10,10);
     cv2.waitKey(100)
@@ -200,6 +200,7 @@ def get_image_center():
     """
     
     camera    = PiCamera()
+    camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
     time.sleep(0.1) # Let camera warm up
     camera.capture(raw_img, format="bgr")
@@ -217,6 +218,7 @@ def get_object_center(rth, gth, bth):
     """
 
     camera    = PiCamera()
+    camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
     time.sleep(0.1) # Let camera warm up
     camera.capture(raw_img, format="bgr")
