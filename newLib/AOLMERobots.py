@@ -25,6 +25,8 @@ def help_all():
     bw(t): Move  backward for t seconds.
     rt(t): Turns right    for t seconds.
     lt(t): Turns left     for t seconds.
+    rtd(d): Turns right for d degrees.
+    ltd(d): Turns left for d degrees.
     To see example, type:
       import AOLMERobots as gopi
       help(gopi.fw)
@@ -92,7 +94,7 @@ def rt(t):
 
 def lt(t):
     """
-    Turns right for t seconds.
+    Turns left for t seconds.
 
     Example:
     import AOLMERobots as gopi
@@ -115,9 +117,9 @@ def ltd(d):
     gopi.ltd(30)
     """
     
+    easygpg3 = easy.EasyGoPiGo3()
     dexgp = gopigo3.GoPiGo3()
-    
-    dexgp.turn_degrees(-d*3, True)
+    easygpg3.turn_degrees(-d, True)
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
     
 
@@ -131,8 +133,9 @@ def rtd(d):
     gopi.ltd(30)
     """
     
+    easygpg3 = easy.EasyGoPiGo3()
     dexgp = gopigo3.GoPiGo3()
-    dexgp.turn_degrees(d*3)
+    easygpg3.turn_degrees(d, True)
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
 
 
@@ -150,7 +153,7 @@ def get_dist():
     """
     easy_gpg           = easy.EasyGoPiGo3()
     my_distance_sensor = easy_gpg.init_distance_sensor()
-    dist               = my_distance_sensor.read()
+    dist               = my_distance_sensor.read_mm()
     return dist
 
 
@@ -178,14 +181,16 @@ def save_image(img, image_name):
     Saves image at /home/pi/robo_snap/ directory.
     """
     
-    cv2.imwrite("/home/pi/robo_snap/"+image_name,img)
+    cv2.imwrite("/home/pi/robo_snap/"+image_name+'.png',img)
 
 
 def show_image(img):
     """
     Show image.
     """
+    img= cv2.resize(img, (int(img.shape[1]*0.75), int(img.shape[0]*0.75)))
     cv2.imshow("Figure1",img)
+    cv2.moveWindow("Figure1", 10,10);
     cv2.waitKey(100)
 
 

@@ -23,7 +23,7 @@ except:
 import math       # import math for math.pi constant
 import time
 
-FIRMWARE_VERSION_REQUIRED = "0.3.x" # Make sure the top 2 of 3 numbers match
+FIRMWARE_VERSION_REQUIRED = "1.0.x" # Make sure the top 2 of 3 numbers match
 
 if hardware_connected:
     GPG_SPI = spidev.SpiDev()
@@ -32,255 +32,6 @@ if hardware_connected:
     GPG_SPI.mode = 0b00
     GPG_SPI.bits_per_word = 8
 
-
-def debug(in_str):
-    if False:
-        print(in_str)
-
-class Sensor(object):
-    '''
-    Base class for all sensors
-    Class Attributes:
-        port : string - user-readable port identification
-        portID : integer - actual port id
-        pinmode : "INPUT" or "OUTPUT"
-        pin : GROVE_1_1, GROVE_1_2, GROVE_2_1, GROVE_2_2
-        descriptor = string to describe the sensor for printing purposes
-    Class methods:
-        set_port / get_port
-        set_pin_mode / get_pin_mode
-    '''
-    PORTS = {}
-
-    def __init__(self, port, pinmode, gpg):
-        '''
-        port = one of PORTS keys
-        pinmode = "INPUT", "OUTPUT", "SERIAL" (which gets ignored)
-        '''
-        debug("Sensor init")
-        self.gpg = gpg
-        debug(pinmode)
-        self.set_port(port)
-        self.set_pin_mode(pinmode)
-
-        try:
-            # I2C sensors don't need a valid gpg
-            if pinmode == "INPUT":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.CUSTOM)
-                self.gpg.set_grove_mode(self.portID,
-                                        self.gpg.GROVE_INPUT_ANALOG)
-            if pinmode == "DIGITAL_INPUT":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.CUSTOM)
-                self.gpg.set_grove_mode(self.portID,
-                                        self.gpg.GROVE_INPUT_DIGITAL)
-            if pinmode == "OUTPUT":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.CUSTOM)
-                self.gpg.set_grove_mode(self.portID,
-                                        self.gpg.GROVE_OUTPUT_PWM)
-            if pinmode == "DIGITAL_OUTPUT":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.CUSTOM)
-                self.gpg.set_grove_mode(self.portID,
-                                        self.gpg.GROVE_OUTPUT_DIGITAL)
-            if pinmode == "US":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.US)
-            if pinmode == "IR":
-                self.gpg.set_grove_type(self.portID,
-                                        self.gpg.GROVE_TYPE.IR_GO_BOX)
-        except:
-            pass
-            
-    def __str__(self):
-        return ("{} on port {} \npinmode {}\nportID {}".format(self.descriptor,
-                self.get_port(), self.get_pin_mode(), self.portID))
-
-    def set_pin(self, pin):
-        if self.port == "AD1":
-            if pin == 1:
-                self.pin = self.gpg.GROVE_1_1
-            else:
-                self.pin = self.gpg.GROVE_1_2
-        elif self.port == "AD2":
-            if pin == 1:
-                self.pin = self.gpg.GROVE_2_1
-            else:
-                self.pin = self.gpg.GROVE_2_2
-        debug("setting pin to {}".format(self.pin))
-
-    def get_pin(self):
-        return self.pin
-
-    def set_port(self, port):
-        debug(port)
-        self.port = port
-        debug(self.port)
-        debug("self.gpg is {}".format(self.gpg))
-
-        if port == "AD1":
-            self.portID = self.gpg.GROVE_1
-        elif port == "AD2":
-            self.portID = self.gpg.GROVE_2
-        elif port == "SERIAL":
-            self.portID = -1
-        elif port == "I2C":
-            self.portID = -2
-        elif port == "SERVO1":
-            self.portID = self.gpg.SERVO_1
-        elif port == "SERVO2":
-            self.portID = self.gpg.SERVO_2
-        else:
-            self.portID = -5
-
-        debug(self.portID)
-
-    def get_port(self):
-        return (self.port)
-
-    def get_port_ID(self):
-        return (self.portID)
-
-    def set_pin_mode(self, pinmode):
-        self.pinmode = pinmode
-
-    def get_pin_mode(self):
-        return (self.pinmode)
-
-    # def is_analog(self):
-    #     return (self.pin == ANALOG)
-
-    # def is_digital(self):
-    #     return (self.pin == DIGITAL)
-
-    def set_descriptor(self, descriptor):
-        self.descriptor = descriptor
-##########################
-
-class AnalogSensor(Sensor):
-    '''
-    implements read and write methods
-    '''
-    def __init__(self, port, pinmode, gpg):
-        debug("AnalogSensor init")
-        self.value = 0
-        self.freq = 24000
-        Sensor.__init__(self, port, pinmode, gpg)
-        
-        # this delay is at least needed by the Light sensor
-        time.sleep(0.01)
-
-    def read(self):
-        self.value = self.gpg.get_grove_analog(self.get_pin())
-        return self.value
-
-    def percent_read(self):
-        '''
-        brings the sensor read to a percent scale
-        '''
-        reading_percent = self.read() * 100 // 4096
-        return reading_percent
-
-    def write(self, power):
-        self.value = power
-        return_value = self.gpg.set_grove_pwm_duty(self.get_pin(),
-                                                       power)
-        return return_value
-
-    def write_freq(self, freq):
-        self.freq = freq
-        # debug("write_freq: {}".format(self.freq))
-        return_value = self.gpg.set_grove_pwm_frequency(
-                self.get_port_ID(),
-                self.freq)
-        debug ("Analog Write on {} at {}".format(self.get_port_ID(),
-                                                     self.freq))
-        return return_value
-
-class Buzzer(AnalogSensor):
-    '''
-    Default port is AD1
-    It has three methods:
-    sound(power) -> will change incoming power to 0 or 50
-    note: 50 duty cycle allows for musical tones
-    sound_off() -> which is the same as _sound(0)
-    sound_on() -> which is the same as _sound(50)
-    '''
-
-    scale = {"A3": 220,
-             "A3#": 233,
-             "B3": 247,
-             "C4": 261,
-             "C4#": 277,
-             "D4": 293,
-             "D4#": 311,
-             "E4": 329,
-             "F4": 349,
-             "F4#": 370,
-             "G4": 392,
-             "G4#": 415,
-             "A4": 440,
-             "A4#": 466,
-             "B4": 494,
-             "C5": 523,
-             "C5#": 554,
-             "D5": 587,
-             "D5#": 622,
-             "E5": 659,
-             "F5": 698,
-             "F5#": 740,
-             "G5": 784,
-             "G5#": 831}
-
-    def __init__(self, port="AD1", gpg=None):
-        try:
-            AnalogSensor.__init__(self, port, "OUTPUT", gpg)
-            self.set_pin(1)
-            self.set_descriptor("Buzzer")
-            self.power = 50
-            self.freq = 329
-            self.sound_off()
-        except:
-            raise AttributeError
-
-    def sound(self, freq):
-        '''
-        '''
-        try:
-            freq = int(freq)
-        except:
-            freq = 0
-
-        # limit duty cycles (aka power) values to either 0 or 50
-        if freq <= 0:
-            power = 0
-            freq = 0
-        else:
-            power = 50
-
-        # if buzzer has to emit a sound then set frequency
-        if power == 50:
-            # translation_factor = ((40000 - 20) / 100)
-            # freq = (freq * translation_factor) + 20
-            self.write_freq(freq)
-
-        # debug(freq, power)
-        # set duty cycle, either 0 or 50
-        self.write(power)
-
-    def sound_off(self):
-        '''
-        Makes buzzer silent
-        '''
-        self.sound(0)
-
-    def sound_on(self):
-        '''
-        Default buzzer sound. It will take the internal frequency as is
-        '''
-        self.sound(self.freq)
 
 class Enumeration(object):
     def __init__(self, names):  # or *names, with no .split()
@@ -333,7 +84,7 @@ class GoPiGo3(object):
     ENCODER_TICKS_PER_ROTATION = 6   # Encoder ticks per motor rotation (number of magnet positions) # 16 for early prototypes
     MOTOR_TICKS_PER_DEGREE = ((MOTOR_GEAR_RATIO * ENCODER_TICKS_PER_ROTATION) / 360.0) # encoder ticks per output shaft rotation degree
     
-    GROVE_I2C_LENGTH_LIMIT = 16
+    GROVE_I2C_LENGTH_LIMIT = 32
     
     SPI_MESSAGE_TYPE = Enumeration("""
         NONE,
@@ -459,7 +210,12 @@ class GoPiGo3(object):
         * Optionally disable the detection of the GoPiGo3 hardware. This can be used for debugging
           and testing when the GoPiGo3 would otherwise not pass the detection tests.
         """
-
+        
+        # Make sure the SPI lines are configured for mode ALT0 so that the hardware SPI controller can use them
+        subprocess.call('gpio mode 12 ALT0', shell=True)
+        subprocess.call('gpio mode 13 ALT0', shell=True)
+        subprocess.call('gpio mode 14 ALT0', shell=True)
+        
         self.SPI_Address = addr
         if detect == True:
             try:
@@ -600,7 +356,7 @@ class GoPiGo3(object):
         hardware version, error
         """
         version = self.spi_read_32(self.SPI_MESSAGE_TYPE.GET_HARDWARE_VERSION)
-        return ("%d.%d.%d" % ((version / 1000000), ((version / 1000) % 1000), (version % 1000)))
+        return ("%d.x.x" % (version / 1000000))
 
     def get_version_firmware(self):
         """
@@ -826,6 +582,19 @@ class GoPiGo3(object):
         outArray = [self.SPI_Address, self.SPI_MESSAGE_TYPE.OFFSET_MOTOR_ENCODER, int(port),\
                     ((offset >> 24) & 0xFF), ((offset >> 16) & 0xFF), ((offset >> 8) & 0xFF), (offset & 0xFF)]
         self.spi_transfer_array(outArray)
+
+    def reset_motor_encoder(self, port):
+        """
+        Reset a motor encoder to 0
+
+        Keyword arguments:
+        port -- The motor port(s). MOTOR_LEFT and/or MOTOR_RIGHT.
+        """
+        if port & self.MOTOR_LEFT:
+            self.offset_motor_encoder(self.MOTOR_LEFT, self.get_motor_encoder(self.MOTOR_LEFT))
+
+        if port & self.MOTOR_RIGHT:
+            self.offset_motor_encoder(self.MOTOR_RIGHT, self.get_motor_encoder(self.MOTOR_RIGHT))
 
     def set_grove_type(self, port, type):
         """
@@ -1154,123 +923,3 @@ class GoPiGo3(object):
 
         # Turn off the LEDs
         self.set_led(self.LED_EYE_LEFT + self.LED_EYE_RIGHT + self.LED_BLINKER_LEFT + self.LED_BLINKER_RIGHT, 0, 0, 0)
-
-
-    def turn_degrees(self, degrees, blocking=False):
-        # this is the method to use if you want the robot to turn 90 degrees
-        # or any other amount. This method is based on robot orientation
-        # and not wheel rotation
-        # the distance in mm that each wheel needs to travel
-        WheelTravelDistance = ((self.WHEEL_BASE_CIRCUMFERENCE * degrees) / 360)
-        # the number of degrees each wheel needs to turn
-        WheelTurnDegrees = ((WheelTravelDistance / self.WHEEL_CIRCUMFERENCE) *
-                            360)
-
-        # get the starting position of each motor
-        StartPositionLeft = self.get_motor_encoder(self.MOTOR_LEFT)
-        StartPositionRight = self.get_motor_encoder(self.MOTOR_RIGHT)
-
-        # Set each motor target
-        self.set_motor_position(self.MOTOR_LEFT,
-                                (StartPositionLeft + WheelTurnDegrees))
-        self.set_motor_position(self.MOTOR_RIGHT,
-                                (StartPositionRight - WheelTurnDegrees))
-        
-        #if blocking:
-        if blocking:
-            while self.target_reached(
-                    StartPositionLeft + WheelTurnDegrees,
-                    StartPositionRight - WheelTurnDegrees) is False:
-                time.sleep(0.1)
-
-    def target_reached(self, left_target_degrees, right_target_degrees):
-        """
-        | Checks if :
-
-             * The left *wheel* has rotated for ``left_target_degrees`` degrees.
-             * The right *wheel* has rotated for ``right_target_degrees`` degrees.
-
-        | If both conditions are met, it returns ``True``, otherwise it's ``False``.
-
-        :param int left_target_degrees: Target degrees for the *left* wheel.
-        :param int right_target_degrees: Target degrees for the *right* wheel.
-
-        :return: Whether both wheels have reached their target.
-        :rtype: boolean.
-
-        For checking if the `GoPiGo3`_ robot has moved **forward** for ``360 / 360`` wheel rotations, we'd use the following code snippet.
-
-        .. code-block:: python
-
-            # both variables are measured in degrees
-            left_motor_target = 360
-            right_motor_target = 360
-
-            # reset the encoders
-            gpg3_obj.reset_encoders()
-            # and make the robot move forward
-            gpg3_obj.forward()
-
-            while gpg3_obj.target_reached(left_motor_target, right_motor_target):
-                # give the robot some time to move
-                sleep(0.05)
-
-            # now lets stop the robot
-            # otherwise it would keep on going
-            gpg3_obj.stop()
-
-        On the other hand, for moving the `GoPiGo3`_ robot to the **right** for ``187 / 360`` wheel rotations of the left wheel, we'd use the following code snippet.
-
-        .. code-block:: python
-
-            # both variables are measured in degrees
-            left_motor_target = 187
-            right_motor_target = 0
-
-            # reset the encoders
-            gpg3_obj.reset_encoders()
-            # and make the robot move to the right
-            gpg3_obj.right()
-
-            while gpg3_obj.target_reached(left_motor_target, right_motor_target):
-                # give the robot some time to move
-                sleep(0.05)
-
-            # now lets stop the robot
-            # otherwise it would keep on going
-            gpg3_obj.stop()
-
-        .. note::
-
-            You *can* use this method in conjuction with the following methods:
-
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_cm`
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_inches`
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.drive_degrees`
-
-            when they are used in *non-blocking* mode.
-
-            And almost *everytime* with the following ones:
-
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.backward`
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.right`
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.left`
-                 * :py:meth:`~easygopigo3.EasyGoPiGo3.forward`
-
-        """
-        tolerance = 5
-        min_left_target = left_target_degrees - tolerance
-        max_left_target = left_target_degrees + tolerance
-        min_right_target = right_target_degrees - tolerance
-        max_right_target = right_target_degrees + tolerance
-
-        current_left_position = self.get_motor_encoder(self.MOTOR_LEFT)
-        current_right_position = self.get_motor_encoder(self.MOTOR_RIGHT)
-
-        if current_left_position > min_left_target and \
-           current_left_position < max_left_target and \
-           current_right_position > min_right_target and \
-           current_right_position < max_right_target:
-            return True
-        else:
-            return False

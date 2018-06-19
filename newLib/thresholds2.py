@@ -1,7 +1,8 @@
-import matplotlib.pyplot as pyplot
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt 
 import numpy as np
 import cv2 as cv2
-from matplotlib import pyplot as plt
 import gopigo3
 #import pygame
 import time
@@ -11,7 +12,7 @@ import easygopigo3 as easy
 # and generates a single threshold.
 
 dexgp = gopigo3.GoPiGo3() # Creating driver class object, provided by dexter labs.
-my_buzzer = gopigo3.Buzzer("AD2", dexgp)
+#my_buzzer = gopigo3.Buzzer("AD2", dexgp)
 
 gpg = easy.EasyGoPiGo3()
 my_distance_sensor = gpg.init_distance_sensor()
@@ -93,7 +94,7 @@ class threshold:
         self.img   = self.color_img[:,:,self.index]
         return            
        
-                     
+
     def show_color_histograms(self):
         color = ('Blue','Green','Red')
         for i,col in enumerate(color):
@@ -107,6 +108,7 @@ class threshold:
             plt.title(col)
             plt.show()
 
+
     def show_color_comb_hist(self):
         color = ('Blue','Green','Red')
         for i,col in enumerate(color):
@@ -119,7 +121,7 @@ class threshold:
             plt.xlim([0,256])
             plt.title(col)
             plt.show()
-    
+
     def show_threshold(self,plot_name):
         histr = cv2.calcHist([self.color_img],[self.index],None,[256],[0,256])
         plt.figure()
@@ -136,6 +138,7 @@ class threshold:
         plt.show()
         
         
+
     def ThreshHigh(self,LowVal,):
         ret, th1 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY);
         self.threshold_img = th1

@@ -21,6 +21,7 @@ x0,y0       = gopi.get_image_center()
 dist   = gopi.get_dist()
 
 while(dist > 10):
+    print(dist)
     
     # Get object center
     x,y,img     = gopi.get_object_center(red_min_max,
