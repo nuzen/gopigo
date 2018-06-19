@@ -1,11 +1,8 @@
 import AOLMERobots as gopi
 import random
-import pdb
-#import cv2
-#import gopigo3
 from thresholds2 import threshold, comb_thr 
-#dexgp = gopigo3.GoPiGo3()
-# Resetting sensors
+
+# Resetting all sensors
 gopi.reset_sensors()
 
 # Color thresholds
