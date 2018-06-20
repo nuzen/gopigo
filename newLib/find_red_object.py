@@ -18,7 +18,7 @@ x0,y0       = gopi.get_image_center()
 dist   = gopi.get_dist()
 
 while(dist > 10):
-    print(dist)
+    print("Distance to target",dist)
     
     # Get object center
     x,y,img     = gopi.get_object_center(red_min_max,
@@ -34,19 +34,16 @@ while(dist > 10):
     
     if obj_dist >= 0:              # if (object is to right)
         print("Turning left")      # 
-        if obj_dist > 100:          #   if (it is 100 pixels away from center)
+        if obj_dist > 100:         #   if (it is 100 pixels away from center)
             gopi.rtd(10)           #        turn 10 degrees to right
         else:                      #   else
-            print("Moving forward")#
             gopi.fw(1)             #         move forward for 1 second
 
             
     else:                          # if (object to left)
         if obj_dist < 100:         #    if ( it is 100 pixels away from center)
-            print("Turning right") #
             gopi.ltd(10)           #         turn 10 degrees to left
         else:                      #    else
-            print("Moving forward")#
             gopi.fw(1)             #          move forward for 1 second
 
     # Updating object distance

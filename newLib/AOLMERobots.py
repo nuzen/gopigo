@@ -13,6 +13,8 @@ import random
 # Wenjing image threshold module
 from thresholds2 import threshold, comb_thr
 
+DEBUG=True
+
 
 def help_all():
     """
@@ -51,7 +53,8 @@ def fw(t):
     import AOLMERobots as gopi
     gopi.fw(3)
     """
-    
+    if DEBUG:
+        print("\tMoving forward for",t,"sec")
     dexgp = gopigo3.GoPiGo3()
     for i in range(0, int(t*100+1)):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 100)
@@ -67,7 +70,8 @@ def bw(t):
     import AOLMERobots as gopi
     gopi.bw(3)
     """
-    
+    if DEBUG:
+        print("\tMoving backward for",t,"sec")
     dexgp = gopigo3.GoPiGo3()
     for i in range(0, int(t*100+1)):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, -100)
@@ -83,9 +87,11 @@ def rt(t):
     import AOLMERobots as gopi
     gopi.rt(1)
     """
+    if DEBUG:
+        print("\tTurning right for",t,"sec")
     dexgp = gopigo3.GoPiGo3()
     for i in range(0, int(t*100+1)):
-        dexgp.set_motor_power(dexgp.MOTOR_LEFT, 50)
+        dexgp.set_motor_power(dexgp.MOTOR_LEFT, 100)
         dexgp.set_motor_power(dexgp.MOTOR_RIGHT,0)
         time.sleep(0.01)
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
@@ -100,10 +106,12 @@ def lt(t):
     import AOLMERobots as gopi
     gopi.lt(1)
     """
+    if DEBUG:
+        print("\tTurning left for",t,"sec")
     dexgp = gopigo3.GoPiGo3()
     for i in range(0, int(t*100+1)):
         dexgp.set_motor_power(dexgp.MOTOR_LEFT, 0)
-        dexgp.set_motor_power(dexgp.MOTOR_RIGHT,50)
+        dexgp.set_motor_power(dexgp.MOTOR_RIGHT,100)
         time.sleep(0.01)
     dexgp.set_motor_power(dexgp.MOTOR_LEFT + dexgp.MOTOR_RIGHT, 0)
 
@@ -116,7 +124,8 @@ def ltd(d):
     import AOLMERobots as gopi
     gopi.ltd(30)
     """
-    
+    if DEBUG: 
+        print("\tTurning left for",d,"degrees")
     easygpg3 = easy.EasyGoPiGo3()
     dexgp = gopigo3.GoPiGo3()
     easygpg3.turn_degrees(-d, True)
@@ -132,7 +141,8 @@ def rtd(d):
     import AOLMERobots as gopi
     gopi.ltd(30)
     """
-    
+    if DEBUG:
+        print("\tTurning right for",d,"degrees")
     easygpg3 = easy.EasyGoPiGo3()
     dexgp = gopigo3.GoPiGo3()
     easygpg3.turn_degrees(d, True)
@@ -151,6 +161,8 @@ def get_dist():
       dist = gopi.get_dist()
       print(dist)
     """
+    if DEBUG:
+        print("\tReturns distance of obstacle")
     easy_gpg           = easy.EasyGoPiGo3()
     my_distance_sensor = easy_gpg.init_distance_sensor()
     dist               = my_distance_sensor.read_mm()
@@ -166,7 +178,8 @@ def get_image(image_name):
     Returns an image taken using raspberry pi camera.
     This image can be directly used with OpenCV library.
     """
-
+    if DEBUG:
+        print("\tTakes image using camera")
     camera    = PiCamera()
     camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
@@ -181,7 +194,8 @@ def save_image(img, image_name):
     """
     Saves image at /home/pi/robo_snap/ directory.
     """
-    
+    if DEBUG:
+        print("\tSaves image at /home/pi/robo_snap/")
     cv2.imwrite("/home/pi/robo_snap/"+image_name+'.png',img)
 
 
@@ -189,16 +203,19 @@ def show_image(img):
     """
     Show image.
     """
+    if DEBUG:
+        print("\tShows image for 10 milli seconds")
     cv2.imshow("Figure1",img)
     cv2.moveWindow("Figure1", 10,10);
-    cv2.waitKey(100)
+    cv2.waitKey(10)
 
 
 def get_image_center():
     """
     Returns coordinates of image center.
     """
-    
+    if DEBUG:
+        print("\tCalculates image center")
     camera    = PiCamera()
     camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
@@ -216,7 +233,9 @@ def get_object_center(rth, gth, bth):
     Returns centroid of the object detected using
     color thresholds.
     """
-
+    if DEBUG:
+        print("\tGets object center")
+        
     camera    = PiCamera()
     camera.resolution = (512,512)
     raw_img   = PiRGBArray(camera)
@@ -249,5 +268,7 @@ def reset_sensors():
     """
     Resets sensors
     """
+    if DEBUG:
+        print("\tResets all gopigo sensors")
     dexgp = gopigo3.GoPiGo3()
     dexgp.reset_all()
