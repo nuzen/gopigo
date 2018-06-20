@@ -35,14 +35,14 @@ while(dist > 10):
     if obj_dist >= 0:              # if (object is to right)
         print("Turning left")      # 
         if obj_dist > 100:         #   if (it is 100 pixels away from center)
-            gopi.rtd(10)           #        turn 10 degrees to right
+            gopi.rt(0.5)           #        turn 0.5 seconds to right
         else:                      #   else
             gopi.fw(1)             #         move forward for 1 second
 
             
     else:                          # if (object to left)
         if obj_dist < 100:         #    if ( it is 100 pixels away from center)
-            gopi.ltd(10)           #         turn 10 degrees to left
+            gopi.lt(0.5)           #         turn 0.5 seconds to left
         else:                      #    else
             gopi.fw(1)             #          move forward for 1 second
 

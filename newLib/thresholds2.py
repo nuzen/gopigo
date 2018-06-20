@@ -101,12 +101,12 @@ class threshold:
             histr = cv2.calcHist([self.color_img],[i],None,[256],[0,256])
             plt.figure(color[i])
             plt.plot(histr,color = col)
-            pyplot.xlabel('Pixel values')
-            pyplot.ylabel('Number of occurrences')
-            pyplot.title(color[i])
+            plt.xlabel('Pixel values')
+            plt.ylabel('Number of occurrences')
+            plt.title(color[i])
             plt.xlim([0,256])
             plt.title(col)
-            plt.show()
+        plt.show()
 
 
     def show_color_comb_hist(self):
@@ -115,12 +115,12 @@ class threshold:
             histr = cv2.calcHist([self.color_img],[i],None,[256],[0,256])
             plt.figure('RGB Histogram')
             plt.plot(histr,color = col)
-            pyplot.xlabel('Pixel values')
-            pyplot.ylabel('Number of occurrences')
-            pyplot.title(color[i])
+            plt.xlabel('Pixel values')
+            plt.ylabel('Number of occurrences')
+            plt.title(color[i])
             plt.xlim([0,256])
             plt.title(col)
-            plt.show()
+        plt.show()
 
     def show_threshold(self,plot_name):
         histr = cv2.calcHist([self.color_img],[self.index],None,[256],[0,256])

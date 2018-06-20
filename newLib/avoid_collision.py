@@ -24,9 +24,9 @@ while(time_diff_sec <= 10):
     else:                             # Else
         rand_num = randint(0,2)       #    Generate random number between 0 and 2
         if rand_num == 0:             #      If random number is 0
-            gopi.rtd(30)              #        right turn 30 degrees
+            gopi.rt(0.3)              #        right turn 30 degrees
         elif rand_num == 1:           #      IfElse random number is 1
-            gopi.ltd(30)              #        left turn 30 degrees
+            gopi.lt(0.3)              #        left turn 30 degrees
         else:                         #      Else
             gopi.bw(1)                #        go back for 1 second
             

@@ -199,6 +199,19 @@ def save_image(img, image_name):
     cv2.imwrite("/home/pi/robo_snap/"+image_name+'.png',img)
 
 
+def show_RGB_hist(img):
+    """
+    Show the image and the RGB histograms.
+    """
+    if DEBUG:
+        print("\Show an image and its red/green/blue histograms")
+    
+    cv2.imshow("Figure1",img)
+    cv2.moveWindow("Figure1", 10,10);
+    cv2.waitKey(1000)
+    th = threshold(img)
+    th.show_color_histograms()
+
 def show_image(img):
     """
     Show image.
