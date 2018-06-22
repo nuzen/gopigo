@@ -4,6 +4,17 @@ import easygopigo3 as easy
 # Raspberry pi camera modules
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+# Email modules.
+import socket # To get hostname
+import smtplib
+import mimetypes
+from email.mime.multipart import MIMEMultipart
+from email import encoders
+from email.message import Message
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.text import MIMEText
 # Python modules
 import time
 import cv2
@@ -173,7 +184,7 @@ def get_dist():
              Robot Camera
 """
 
-def get_image(image_name):
+def get_image():
     """
     Returns an image taken using raspberry pi camera.
     This image can be directly used with OpenCV library.
@@ -192,11 +203,11 @@ def get_image(image_name):
     
 def save_image(img, image_name):
     """
-    Saves image at /home/pi/robo_snap/ directory.
+    Saves image under current directory.
     """
     if DEBUG:
-        print("\tSaves image at /home/pi/robo_snap/")
-    cv2.imwrite("/home/pi/robo_snap/"+image_name+'.png',img)
+        print("\tSaves image as .png under current folder")
+    cv2.imwrite("./"+image_name+'.png',img)
 
 
 def show_RGB_hist(img):
@@ -285,3 +296,41 @@ def reset_sensors():
         print("\tResets all gopigo sensors")
     dexgp = gopigo3.GoPiGo3()
     dexgp.reset_all()
+    
+"""
+            Email
+"""
+def check_attach(fileToSend):
+    ctype, encoding = mimetypes.guess_type(fileToSend)
+    if ctype is None or encoding is not None:
+        ctype = "application/octet-stream"
+    maintype, subtype = ctype.split("/", 1)
+    fp = open(fileToSend, "rb")
+    attachment = MIMEImage(fp.read(), _subtype=subtype)
+    fp.close()
+    return attachment
+    
+def send_email(email_address, fileName):
+    hostName = socket.gethostname()
+    emailfrom = "aolmegopigo3@gmail.com"
+    emailto = [email_address] # Password is pigopi123!
+    fileToSend = fileName
+    username = "aolmegopigo3"
+    password = "robots1234"
+    body = 'Hi, this is the robot. Here is your picture '+fileName+' attached.'
+    msg = MIMEMultipart()
+    msg["From"] = emailfrom
+    msg["To"] = ", ".join(emailto)
+    msg["Subject"] = hostName +  '_Picture'
+    msg.attach(MIMEText(body, 'plain'))
+    attachment = check_attach(fileToSend)
+    attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
+    msg.attach(attachment)
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(username,password)
+    server.sendmail(emailfrom, emailto, msg.as_string())
+    server.quit()
+    print('Email successfully sent from '+hostName+' with '
+          +fileName)
+

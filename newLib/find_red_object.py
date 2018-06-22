@@ -41,7 +41,7 @@ while(dist > 10):
 
             
     else:                          # if (object to left)
-        if obj_dist < 100:         #    if ( it is 100 pixels away from center)
+        if obj_dist < -100:        #    if ( it is 100 pixels away from center)
             gopi.lt(0.5)           #         turn 0.5 seconds to left
         else:                      #    else
             gopi.fw(1)             #          move forward for 1 second
