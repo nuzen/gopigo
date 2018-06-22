@@ -310,14 +310,14 @@ def check_attach(fileToSend):
     fp.close()
     return attachment
     
-def send_email(email_address, fileName):
+def send_email(email_address, email_message, fileName):
     hostName = socket.gethostname()
     emailfrom = "aolmegopigo3@gmail.com"
     emailto = [email_address] # Password is pigopi123!
     fileToSend = fileName
     username = "aolmegopigo3"
     password = "robots1234"
-    body = 'Hi, this is the robot. Here is your picture '+fileName+' attached.'
+    body = email_message
     msg = MIMEMultipart()
     msg["From"] = emailfrom
     msg["To"] = ", ".join(emailto)

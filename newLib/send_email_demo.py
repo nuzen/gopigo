@@ -19,6 +19,7 @@ from AOLMERobots import get_image, save_image, send_email
  well as sending. 
 """
 email_address = "venkatesh.jatla@gmail.com"
+email_message = "Hi, Here is the email."
 img    = get_image()
 save_image(img, "my_image")
-send_email(email_address, "my_image.png")
+send_email(email_address, email_message, "my_image.png")
