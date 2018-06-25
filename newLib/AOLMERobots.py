@@ -16,6 +16,7 @@ from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 # Python modules
+from datetime import datetime
 import time
 import cv2
 import math
@@ -25,6 +26,7 @@ import random
 from thresholds2 import threshold, comb_thr
 
 DEBUG=True
+START_TIME = datetime.now()
 
 
 def help_all():
@@ -334,3 +336,15 @@ def send_email(email_address, email_message, fileName):
     print('Email successfully sent from '+hostName+' with '
           +fileName)
 
+
+"""
+			Elapsed time.
+""" 
+def get_time():
+	global START_TIME
+	start_time      = START_TIME
+	current_time    = datetime.now()
+	time_diff       = current_time - start_time
+	time_diff_sec   = time_diff.total_seconds()
+	return time_diff_sec
+	
