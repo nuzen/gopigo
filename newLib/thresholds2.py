@@ -7,6 +7,7 @@ import gopigo3
 #import pygame
 import time
 import easygopigo3 as easy
+from pylab import *
 
 # Simple threshold class that takes in a color image
 # and generates a single threshold.
@@ -61,6 +62,7 @@ class threshold:
         self.colors = ['Blue', 'Green', 'Red']      # Color strings
         self.th1   = -1                    # Invalid tresholds
         self.th2   = -1
+        
         return
 
     # The @property  allows you to type
@@ -95,6 +97,7 @@ class threshold:
         return            
        
 
+################ WENJING SHI CHANGES
     def show_color_histograms(self):
         color = ('Blue','Green','Red')
         for i,col in enumerate(color):
@@ -107,6 +110,30 @@ class threshold:
             plt.xlim([0,256])
             plt.title(col)
         plt.show()
+        
+    def show_color_histograms_img(self):
+        color = ('Blue','Green','Red')
+        for i,col in enumerate(color):
+            histr = cv2.calcHist([self.color_img],[i],None,[256],[0,256])
+            plt.figure(color[i])
+            plt.plot(histr,color = col)
+            plt.xlabel('Pixel values')
+            plt.ylabel('Number of occurrences')
+            plt.title(color[i])
+            plt.xlim([0,256])
+            plt.title(col)
+            plt.savefig(col+'.png')
+        
+        blue = cv2.imread('Blue.png')
+        green = cv2.imread('Green.png')
+        red = cv2.imread('Red.png')
+        rgb_hist = np.vstack((red, green, blue))
+                         
+        cv2.namedWindow('RGB Histograms',0)
+        cv2.moveWindow('RGB Histograms', 1215,37)
+        cv2.resizeWindow('RGB Histograms', 500,900)
+        cv2.imshow('RGB Histograms', rgb_hist)
+        #plt.show()
 
 
     def show_color_comb_hist(self):
@@ -121,7 +148,37 @@ class threshold:
             plt.xlim([0,256])
             plt.title(col)
         plt.show()
-
+        
+        
+    def show_hist_with_th(self, rgb_values):
+        color = ('Blue','Green','Red')
+        n = 0
+        for i,col in enumerate(color):
+            histr = cv2.calcHist([self.color_img],[i],None,[256],[0,256])
+            plt.figure(color[i])
+            plt.plot(histr,color = col)
+            plt.axvline(x=rgb_values[n])
+            plt.axvline(x=rgb_values[n+1])
+            plt.xlabel('Pixel values', fontsize=18)
+            plt.ylabel('Number of occurrences',fontsize=12)
+            plt.title(color[i], fontsize = 18)
+            plt.xlim([0,256])
+            plt.title(col)
+            plt.savefig(col+'.png')
+            n=n+2
+            plt.clf()
+        
+        blue = cv2.imread('Blue.png')
+        green = cv2.imread('Green.png')
+        red = cv2.imread('Red.png')
+        rgb_hist = np.vstack((red, green, blue))
+                         
+        cv2.namedWindow('RGB Histograms',0)
+        cv2.moveWindow('RGB Histograms', 1215,37)
+        cv2.resizeWindow('RGB Histograms', 500,900)
+        cv2.imshow('RGB Histograms', rgb_hist)
+##########################################        
+        
     def show_threshold(self,plot_name):
         histr = cv2.calcHist([self.color_img],[self.index],None,[256],[0,256])
         plt.figure()
@@ -131,29 +188,65 @@ class threshold:
         
         ymax = self.color_img.shape[0] * self.color_img.shape[1] 
         if (self.th1>=0):
-            plt.plot((self.th1-2,self.th1), (0,ymax), 'r-')
+            plt.plot((self.th1,self.th1), (0,ymax), 'r-')
         if (self.th2>=0):
-            plt.plot((self.th2-2,self.th2), (0,ymax), 'r-')        
+            plt.plot((self.th2,self.th2), (0,ymax), 'r-')        
         
         plt.show()
         
+    def single_color(self, th, color_name):
+##        print(th)
+        if (color_name == 'r'):
+            r=((self.color_img[:,:,2]/1.0*th/255)).astype(uint8)
+            g=((self.color_img[:,:,1]/1.0*0)).astype(uint8)
+            b=((self.color_img[:,:,0]/1.0*0)).astype(uint8)
+        if (color_name == 'g'):
+            r=((self.color_img[:,:,2]/1.0*0)).astype(uint8)
+            g=((self.color_img[:,:,1]/1.0*th/255)).astype(uint8)
+            b=((self.color_img[:,:,0]/1.0*0)).astype(uint8)
+        if (color_name == 'b'):
+            r=((self.color_img[:,:,2]/1.0*0)).astype(uint8)
+            g=((self.color_img[:,:,1]/1.0*0)).astype(uint8)
+            b=((self.color_img[:,:,0]/1.0*th/255)).astype(uint8)
+                
         
+        single_color_img = cv2.merge((b,g,r))               
+        return single_color_img
 
-    def ThreshHigh(self,LowVal,):
-        ret, th1 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY);
-        self.threshold_img = th1
+    
+##    def ThreshLow(self,HiVal):
+##        #ret, th2_1 = cv2.threshold(self.img, 0, 255, cv2.THRESH_BINARY);
+##        ret, th2 = cv2.threshold(self.img, HiVal, 255, cv2.THRESH_BINARY_INV)
+##        self.threshold_img = th2
+##        self.th1 = HiVal
+##        self.th2 = -1
+##        return self.threshold_img
+##    
+##    def ThreshHigh(self,LowVal):
+##        ret, th1 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY);
+####        ret, th1_1 = cv2.threshold(self.img, 255, 255, cv2.THRESH_BINARY_INV);
+##        self.threshold_img = th1
+##        self.th1 = LowVal
+##        self.th2 = -1
+##        return self.threshold_img
+
+    def ThreshLow(self,LowVal):
+        ret, th2_1 = cv2.threshold(self.img, 0, 255, cv2.THRESH_BINARY);
+        ret, th2 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY_INV)
+        self.threshold_img = th2&th2_1
         self.th1 = LowVal
         self.th2 = -1
-        return th1
-
-    def ThreshLow(self,HiVal):
-        ret, th2 = cv2.threshold(self.img, HiVal, 255, cv2.THRESH_BINARY_INV);
-        self.threshold_img = th2
+        return self.threshold_img
+    
+    def ThreshHigh(self,HiVal):
+        ret, th1 = cv2.threshold(self.img, HiVal, 255, cv2.THRESH_BINARY);
+        ret, th1_1 = cv2.threshold(self.img, 255, 255, cv2.THRESH_BINARY_INV);
+        self.threshold_img = th1&th1_1
         self.th1 = HiVal
         self.th2 = -1
-        return th2
+        return self.threshold_img
     
-    def ThreshRange(self,LowVal, HiVal):
+    def ThreshRange(self,LowVal, HiVal):  
         ret, th3 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY);
         ret, th4 = cv2.threshold(self.img, HiVal, 255, cv2.THRESH_BINARY_INV);
         self.threshold_img = th3&th4
@@ -161,7 +254,33 @@ class threshold:
         self.th2 = HiVal
         return self.threshold_img
    
-             
+class thr_combination:
+    def __init__(self, img, blueTh,greenTh,redTh):       
+        row=img.shape[0]
+        col=img.shape[1]
+        
+        allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
+        self.count = np.sum(allTh)        
+        
+        b=((img[:,:,0]/1.0)*allTh).astype(uint8)
+        g=((img[:,:,1]/1.0)*allTh).astype(uint8)
+        r=((img[:,:,2]/1.0)*allTh).astype(uint8)
+                
+        self.comb_img = cv2.merge((b,g,r))
+        return 
+        
+    def im_show(self):
+        #size_pct = 150 #  percentage of original size (e.g., 25, 50, 100)
+        #self.comb_img = shrink_img(self.comb_img, size_pct)
+        cv2.namedWindow('RGB Combination',0)
+        cv2.moveWindow('RGB Combination', 515,600);
+        cv2.imshow('RGB Combination', self.comb_img)
+        cv2.resizeWindow('RGB Combination', 300,300)
+        return 
+    
+    def return_result(self):
+        return self.comb_img
+                         
         
 class comb_thr:
     def __init__(self, img, blueTh,greenTh,redTh,color_name, angle, action):
@@ -175,6 +294,7 @@ class comb_thr:
         #row=img.shape[0]
         self.col=img.shape[1]
         self.comb_binary_img = (blueTh*greenTh*redTh).astype(np.uint8)
+        
 #        self.allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
         _, self.contours, _ = cv2.findContours(self.comb_binary_img.copy(), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_L1)
 #        self.count_num = np.sum(self.allTh)
@@ -215,6 +335,8 @@ class comb_thr:
         # Mark the largest connected color part with a blue point
         else:
             self.searchLargest()
+    
+    
     
     ''' Find the largest color region and mark it with blue dot '''
     def markLargest(self):
@@ -294,7 +416,11 @@ class comb_thr:
         return (self.center, self.angle, self.img)
 
     def returnResults(self):
-        return (self.center, self.angle, self.img)
+        if (self.areas == []):
+            max_area= 0
+        else:
+            max_area = max(self.areas)
+        return (self.center, self.angle, self.img, max_area)
             
     # The @property  allows you to type
     #    object_name.original_img 
