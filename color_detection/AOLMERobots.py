@@ -311,7 +311,7 @@ def get_img_object_center(img, rth, gth, bth):
         y = obj_center[1]
         
     
-    return x,y,img, max_area
+    return x,y, max_area
     
     
 

@@ -8,15 +8,17 @@ Created on Wed Jun 20 10:00:44 2018
 import AOLMERobots as gopi
 from thresholds2 import *
 import cv2
+# Resetting all sensors
+gopi.reset_sensors()
 
-file_name = input('Type the name of image: ')
-image = cv2.imread(file_name)
-image= cv2.resize(image, (512,512))
+cv2.namedWindow('image')
+image = gopi.get_image()
+cv2.imshow('image',image)
+cv2.waitKey(10)
 
 thr_obj = threshold(image)
 cv2.namedWindow('image')
 cv2.moveWindow('image', 10,37)
-
 # Create sliders
 def nothing(x):
     pass
@@ -35,7 +37,12 @@ cv2.createTrackbar(switch, 'image',1,1,nothing)
 
 while(1):
 
+    k = cv2.waitKey(1) & 0xFF
+    if k == 27:
+        break
 
+    image = gopi.get_image()
+    thr_obj = threshold(image)
     img = image.copy()
     
     # get current positions of six trackbars
@@ -111,7 +118,7 @@ while(1):
     grn_min_max = [greenLow, greenHi]
     blu_min_max = [blueLow, blueHi]
     
-    x,y,max_area = gopi.get_img_object_center(img, red_min_max, grn_min_max, blu_min_max)
+    x,y,det_img, max_area = gopi.get_img_object_center(img, red_min_max, grn_min_max, blu_min_max)
     white_2= np.zeros((90+RedLow.shape[0], RedLow.shape[1]), np.uint8)
     white_2[:] = (255)    
     
@@ -140,13 +147,15 @@ while(1):
     cv2.resizeWindow('RGB binary', 700,900)
     
     # Add the green dot for center of the image and display it
-    cv2.circle(img, (int(image.shape[0]/2), int(image.shape[1]/2)),2,(0,255,0),2)
-    cv2.imshow('image',img)
+    cv2.circle(det_img, (int(image.shape[0]/2), int(image.shape[1]/2)),2,(0,255,0),2)
+    cv2.imshow('image',det_img)
     
-    cv2.waitKey(1000)
+    cv2.waitKey(10)
     
     # Show histograms for RGB color
     gopi.show_RGB_hist(img, rgb_values)    
     
     
 cv2.destroyAllWindows()
+
+

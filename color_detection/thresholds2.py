@@ -246,7 +246,7 @@ class threshold:
         return self.threshold_img
     
     def ThreshRange(self,LowVal, HiVal):  
-        ret, th3 = cv2.threshold(self.img, LowVal, 255, cv2.THRESH_BINARY);
+        ret, th3 = cv2.threshold(self.img, LowVal-1, 255, cv2.THRESH_BINARY);
         ret, th4 = cv2.threshold(self.img, HiVal, 255, cv2.THRESH_BINARY_INV);
         self.threshold_img = th3&th4
         self.th1 = LowVal
@@ -258,12 +258,12 @@ class thr_combination:
         row=img.shape[0]
         col=img.shape[1]
         
-        allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
-        self.count = np.sum(allTh)        
+        self.allTh = (blueTh/255.0)*(greenTh/255.0)*(redTh/255.0)
+        self.count = np.sum(self.allTh)        
         
-        b=((img[:,:,0]/1.0)*allTh).astype(uint8)
-        g=((img[:,:,1]/1.0)*allTh).astype(uint8)
-        r=((img[:,:,2]/1.0)*allTh).astype(uint8)
+        b=((img[:,:,0]/1.0)*self.allTh).astype(uint8)
+        g=((img[:,:,1]/1.0)*self.allTh).astype(uint8)
+        r=((img[:,:,2]/1.0)*self.allTh).astype(uint8)
                 
         self.comb_img = cv2.merge((b,g,r))
         return 
@@ -278,7 +278,7 @@ class thr_combination:
         return 
     
     def return_result(self):
-        return self.comb_img
+        return self.comb_img, self.allTh
                          
         
 class comb_thr:

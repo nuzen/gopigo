@@ -14,7 +14,7 @@ image = gopi.get_image()
 
 thr_obj = threshold(image)
 cv2.namedWindow('image')
-
+cv2.moveWindow('image', 10,37)
 # Create sliders
 def nothing(x):
     pass
@@ -51,7 +51,6 @@ while(1):
     s = cv2.getTrackbarPos(switch,'image')
     if s == 0:
         break
-    
     rgb_values = [blueLow, blueHi, greenLow, greenHi, redLow, redHi]
     
     # Red component processing:
@@ -60,48 +59,33 @@ while(1):
     RedRange =  thr_obj.ThreshRange (redLow , redHi)   
     RedHi    =  thr_obj.ThreshHigh  (redHi)
     
-    # Onlt show red channel of the image:
-    RedLow_single = thr_obj.single_color(RedLow, 'r')
-    RedRange_single = thr_obj.single_color(RedRange, 'r')
-    RedHi_single = thr_obj.single_color(RedHi, 'r')
-    
     # Green component processing:
     thr_obj.sel_color_comp ('green')
     GreenLow   =  thr_obj.ThreshLow   (greenLow)            
     GreenRange =  thr_obj.ThreshRange (greenLow , greenHi)   
     GreenHi    =  thr_obj.ThreshHigh  (greenHi)
-    
-    # Onlt show green channel of the image
-    GreenLow_single = thr_obj.single_color(GreenLow, 'g')
-    GreenRange_single = thr_obj.single_color(GreenRange, 'g')
-    GreenHi_single = thr_obj.single_color(GreenHi, 'g')
-    
+        
     # Blue component processing:
     thr_obj.sel_color_comp ('blue')
     BlueLow   =  thr_obj.ThreshLow   (blueLow)            
     BlueRange =  thr_obj.ThreshRange (blueLow , blueHi)   
     BlueHi    =  thr_obj.ThreshHigh  (blueHi)             
    
-    # Onlt show blue channel of the image
-    BlueLow_single = thr_obj.single_color(BlueLow, 'b')
-    BlueRange_single = thr_obj.single_color(BlueRange, 'b')
-    BlueHi_single = thr_obj.single_color(BlueHi, 'b')
-   
     # Generate the second window, including 9 single color images, one combination image, and text
-    white= np.zeros((90, RedLow.shape[1], 3), np.uint8)
+    white= np.zeros((90, RedLow.shape[1]), np.uint8)
     white[:] = (255)
 
-    vcat1 = cv2.vconcat((white, RedLow_single))
-    vcat2 = cv2.vconcat((white, RedRange_single))
-    vcat3 = cv2.vconcat((white, RedHi_single))
+    vcat1 = cv2.vconcat((white, RedLow))
+    vcat2 = cv2.vconcat((white, RedRange))
+    vcat3 = cv2.vconcat((white, RedHi))
     
-    vcat4 = cv2.vconcat((white, GreenLow_single))
-    vcat5 = cv2.vconcat((white, GreenRange_single))
-    vcat6 = cv2.vconcat((white, GreenHi_single))
+    vcat4 = cv2.vconcat((white, GreenLow))
+    vcat5 = cv2.vconcat((white, GreenRange))
+    vcat6 = cv2.vconcat((white, GreenHi))
     
-    vcat7 = cv2.vconcat((white, BlueLow_single))
-    vcat8 = cv2.vconcat((white, BlueRange_single))
-    vcat9 = cv2.vconcat((white, BlueHi_single))
+    vcat7 = cv2.vconcat((white, BlueLow))
+    vcat8 = cv2.vconcat((white, BlueRange))
+    vcat9 = cv2.vconcat((white, BlueHi))
     
     font = cv2.FONT_HERSHEY_SIMPLEX
     cv2.putText(vcat1,'0<=v<RL',(30,50), font, 1.5,(0,0,0), 3, 0)
@@ -121,7 +105,7 @@ while(1):
     rgb_all = np.vstack((red_all, green_all, blue_all))
 
     # Get middle-RGB combination
-    comb_image = thr_combination(img, BlueRange,GreenRange, RedRange).return_result()   
+    comb_image, comb_allTh= thr_combination(img, BlueRange,GreenRange, RedRange).return_result()   
     
     # Mark conter of color regions
     red_min_max = [redLow, redHi]
@@ -129,7 +113,7 @@ while(1):
     blu_min_max = [blueLow, blueHi]
     
     x,y,det_img, max_area = gopi.get_img_object_center(img, red_min_max, grn_min_max, blu_min_max)
-    white_2= np.zeros((90+RedLow.shape[0], 2*RedLow.shape[1], 3), np.uint8)
+    white_2= np.zeros((90+RedLow.shape[0], RedLow.shape[1]), np.uint8)
     white_2[:] = (255)    
     
     cv2.putText(white_2, str(redLow) +'<= Red <= '+str(redHi),(30,150), font, 1.5,(0,0,0), 3, 0)
@@ -137,16 +121,23 @@ while(1):
     cv2.putText(white_2, str(blueLow) +'<= Blue <='+str(blueHi),(30, 290), font, 1.5,(0,0,0), 3, 0)
     cv2.putText(white_2,'LargestArea = '+str(int(max_area)),(30,360), font, 1.5,(0,0,0), 3, 0)
     
-    plot_1 = np.vstack((white, comb_image))
+    plot_1 = np.vstack((white, comb_allTh))
     
     cv2.putText(plot_1,'Middle RGB Combination',(10,50), font, 1.2,(0,0,0), 3, 0)
-    plot_2 = np.hstack((plot_1, white_2))
-    plot_3 = np.vstack((rgb_all, plot_2))
+    plot_2 = np.hstack((white_2, plot_1))
+    
+    plot_2_3_channel = cv2.merge((plot_2, plot_2, plot_2))  
+    rgb_all_3_channel = cv2.merge((rgb_all, rgb_all, rgb_all))
+    white_3_channel = cv2.merge((white, white, white))
+    
+    plot_3 = np.vstack((white_3_channel, comb_image))
+    plot_4 = np.hstack((plot_2_3_channel, plot_3.astype(np.float64)/255.0))
+    plot_5 = np.vstack((rgb_all_3_channel, plot_4))
     
     
     cv2.namedWindow('RGB binary',0)
     cv2.moveWindow('RGB binary', 515,37);
-    cv2.imshow('RGB binary', plot_3)
+    cv2.imshow('RGB binary', plot_5)
     cv2.resizeWindow('RGB binary', 700,900)
     
     # Add the green dot for center of the image and display it
@@ -160,3 +151,4 @@ while(1):
     
     
 cv2.destroyAllWindows()
+
